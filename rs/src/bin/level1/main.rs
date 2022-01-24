@@ -8,13 +8,10 @@ fn part1() -> i32 {
     let mut previous: Option<i32> = None;
     for line in lines {
         let current: i32 = line.parse().unwrap();
-        match previous {
-            Some(value) => {
-                if current > value {
-                    total += 1;
-                }
+        if let Some(value) = previous {
+            if current > value {
+                total += 1;
             }
-            None => {}
         }
         previous = Some(current);
     }
