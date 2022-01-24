@@ -25,7 +25,7 @@ fn part1() -> i32 {
     i32::from_str_radix(&gamma, 2).unwrap() * i32::from_str_radix(&epsilon, 2).unwrap()
 }
 
-fn more_common_bit(values: &Vec<&str>, index: usize) -> String {
+fn more_common_bit(values: &[&str], index: usize) -> String {
     let mut zeros = 0;
     let mut ones = 0;
     for v in values {
@@ -36,9 +36,9 @@ fn more_common_bit(values: &Vec<&str>, index: usize) -> String {
         }
     }
     if zeros > ones {
-        return "0".to_string();
+        "0".to_string()
     } else {
-        return "1".to_string();
+        "1".to_string()
     }
 }
 
