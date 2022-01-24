@@ -1,7 +1,7 @@
 use std::collections::hash_map::HashMap;
 use std::fmt;
 
-#[derive(Hash, Eq, PartialEq)]
+#[derive(Hash, Eq, PartialEq, Copy, Clone)]
 struct Point {
   x: i32,
   y: i32,
@@ -25,40 +25,34 @@ impl Line {
     self.start.x == self.end.x || self.start.y == self.end.y
   }
 
+  fn dir(&self) -> (i32, i32) {
+    (
+      (self.end.x - self.start.x).signum(),
+      (self.end.y - self.start.y).signum(),
+    )
+  }
+
   fn points(&self) -> Vec<Point> {
     let mut pts = Vec::new();
-    if self.start.x == self.end.x {
-      for y in range(self.start.y, self.end.y) {
-        pts.push(Point { x: self.start.x, y });
+    let (x, y) = self.dir();
+    let mut p = self.start;
+    while p != self.end {
+      pts.push(p);
+      p = Point {
+        x: p.x + x,
+        y: p.y + y,
       }
-    } else if self.start.y == self.end.y {
-      for x in range(self.start.x, self.end.x) {
-        pts.push(Point { x, y: self.start.y })
-      }
-    } else {
-      panic!("Can't get points for non-ortho line");
     }
+    pts.push(self.end);
     pts
   }
 }
 
-fn range(a: i32, b: i32) -> Vec<i32> {
-  let mut r = Vec::new();
-  if a <= b {
-    for i in a..b + 1 {
-      r.push(i);
-    }
-  } else {
-    for i in b..a + 1 {
-      r.push(i);
-    }
-  }
-  r
-}
-
-fn part1() -> usize {
+fn solve(part: i32) -> usize {
   let mut lines = input();
-  lines.retain(|l| l.is_orthogonal());
+  if part == 1 {
+    lines.retain(|l| l.is_orthogonal());
+  }
   let mut world: HashMap<Point, i32> = HashMap::new();
   for l in lines {
     for p in l.points() {
@@ -110,5 +104,6 @@ fn input() -> Vec<Line> {
 }
 
 fn main() {
-  println!("part 1: {}", part1());
+  println!("part 1: {}", solve(1));
+  println!("part 2: {}", solve(2));
 }
