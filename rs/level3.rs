@@ -1,8 +1,8 @@
-fn calc_part1(input: &str) {
+fn part1() -> i32 {
     let mut gamma: String = String::new();
     let mut epsilon: String = String::new();
 
-    let values: Vec<&str> = input.lines().collect();
+    let values = input();
     for index in 0..12 {
         let mut zeros = 0;
         let mut ones = 0;
@@ -22,12 +22,7 @@ fn calc_part1(input: &str) {
         }
     }
 
-    println!("gamma={}, epsilon={}", gamma, epsilon);
-
-    println!(
-        "{}",
-        isize::from_str_radix(&gamma, 2).unwrap() * isize::from_str_radix(&epsilon, 2).unwrap()
-    );
+    i32::from_str_radix(&gamma, 2).unwrap() * i32::from_str_radix(&epsilon, 2).unwrap()
 }
 
 fn more_common_bit(values: &Vec<&str>, index: usize) -> String {
@@ -47,41 +42,41 @@ fn more_common_bit(values: &Vec<&str>, index: usize) -> String {
     }
 }
 
-fn calc_part2_oxygen(input: &str) -> &str {
-    let mut values: Vec<&str> = input.lines().collect();
+fn calc_part2_oxygen() -> String {
+    let mut values = input();
     for index in 0..12 {
         let mcb = more_common_bit(&values, index);
         values.retain(|v| v[index..index + 1] == mcb);
         if values.len() == 1 {
-            return values[0];
+            return values[0].to_string();
         }
     }
     panic!("This shouldn't happen???");
 }
 
-fn calc_part2_co2(input: &str) -> &str {
-    let mut values: Vec<&str> = input.lines().collect();
+fn calc_part2_co2() -> String {
+    let mut values = input();
     for index in 0..12 {
         let mcb = more_common_bit(&values, index);
         values.retain(|v| v[index..index + 1] != mcb);
         if values.len() == 1 {
-            return values[0];
+            return values[0].to_string();
         }
     }
     panic!("This shouldn't happen???");
 }
 
-fn calc_part2(input: &str) -> (i32, i32) {
-    let oxygen = calc_part2_oxygen(input);
-    let co2 = calc_part2_co2(input);
-    return (
-        i32::from_str_radix(&oxygen, 2).unwrap(),
-        i32::from_str_radix(&co2, 2).unwrap(),
-    );
+fn part2() -> i32 {
+    let oxygen = calc_part2_oxygen();
+    let co2 = calc_part2_co2();
+    i32::from_str_radix(&oxygen, 2).unwrap() * i32::from_str_radix(&co2, 2).unwrap()
+}
+
+fn input() -> Vec<&'static str> {
+    include_str!("input3.txt").lines().collect()
 }
 
 fn main() {
-    // calc_part1(include_str!("./input3.txt"));
-    let (o, c) = calc_part2(include_str!("./input3.txt"));
-    println!("{}", o * c);
+    println!("part 1: {}", part1());
+    println!("part 2: {}", part2());
 }
