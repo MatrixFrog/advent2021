@@ -21,7 +21,7 @@ fn update(pos: &mut Position, command: &str) {
 }
 
 fn main() {
-    let raw_input = include_str!("./input2.txt");
+    let raw_input = include_str!("input.txt");
 
     let mut pos = Position {
         horizontal: 0,

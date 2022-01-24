@@ -73,7 +73,7 @@ fn part2() -> i32 {
 }
 
 fn input() -> Vec<&'static str> {
-    include_str!("input3.txt").lines().collect()
+    include_str!("input.txt").lines().collect()
 }
 
 fn main() {

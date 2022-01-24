@@ -1,7 +1,6 @@
-use std::fs;
 
 fn part1() -> i32 {
-    let contents = fs::read_to_string("input1.txt").expect("Something went wrong reading the file");
+    let contents = include_str!("input.txt");
     let lines = contents.lines();
 
     let mut total: i32 = 0;
@@ -24,7 +23,7 @@ fn part1() -> i32 {
 }
 
 fn part2() -> i32 {
-    let contents = fs::read_to_string("input1.txt").expect("Something went wrong reading the file");
+    let contents = include_str!("input.txt");
     let lines = contents.lines();
     let values: Vec<i32> = lines.map(|l| l.parse::<i32>().unwrap()).collect();
 
