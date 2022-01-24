@@ -5,7 +5,7 @@ struct Position {
 }
 
 fn update(pos: &mut Position, command: &str) {
-    let mut parts = command.split(" ");
+    let mut parts = command.split(' ');
     let command_type = parts.next().unwrap();
     let value: i32 = parts.next().unwrap().parse().unwrap();
 
