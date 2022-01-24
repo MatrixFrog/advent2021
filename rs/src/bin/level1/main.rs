@@ -31,11 +31,11 @@ fn part2() -> i32 {
             continue;
         }
         let back3 = values.get(i - 3);
-        back3.map(|previous_value| {
+        if let Some(previous_value) = back3 {   
             if v > previous_value {
                 total += 1;
-            }
-        });
+            } 
+        }
     }
 
     total
