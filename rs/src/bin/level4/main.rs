@@ -14,6 +14,7 @@ impl fmt::Debug for Square {
 #[derive(Debug)]
 struct Board {
   data: [[Square; 5]; 5],
+  already_won: bool,
 }
 
 impl Board {
@@ -25,6 +26,7 @@ impl Board {
           marked: false,
         })
       }),
+      already_won: false,
     }
   }
 
@@ -32,6 +34,9 @@ impl Board {
   // Start by finding the sum of all unmarked numbers on that board [...]
   // Then, multiply that sum by the number that was just called when the board won
   fn mark(&mut self, n: i32) -> Option<i32> {
+    if self.already_won {
+      return None;
+    }
     for row in &mut self.data {
       for sq in row {
         if sq.value == n {
@@ -41,6 +46,7 @@ impl Board {
     }
     if self.check_for_win() {
       let score = self.sum_of_unmarked() * n;
+      self.already_won = true;
       Some(score)
     } else {
       None
@@ -74,12 +80,16 @@ impl Board {
   }
 }
 
-fn part1() -> i32 {
+fn part2() -> i32 {
   let (calls, mut boards) = input();
   for c in calls {
-    for b in &mut boards {
+    boards.retain(|b| !b.already_won);
+    let down_to_last_board = boards.len() == 1;
+    for b in boards.iter_mut() {
       if let Some(score) = b.mark(c) {
-        return score;
+        if down_to_last_board {
+          return score;
+        }
       }
     }
   }
@@ -128,5 +138,5 @@ fn input() -> (Vec<i32>, Vec<Board>) {
 }
 
 fn main() {
-  println!("part 1: {}", part1());
+  println!("part 1: {}", part2());
 }
