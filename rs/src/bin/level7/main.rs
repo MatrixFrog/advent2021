@@ -10,8 +10,9 @@ fn input() -> Vec<i32> {
     distances
 }
 
-fn fuel_cost(a:i32, b: i32) ->i32{
-    (a-b).abs()
+fn fuel_cost(a: i32, b: i32) -> i32 {
+    let n = (a - b).abs();
+    n * (n + 1) / 2
 }
 
 fn solve() -> i32 {
@@ -20,9 +21,10 @@ fn solve() -> i32 {
     let min = *distances.iter().min().unwrap();
     (min..max)
         .map(|pos| distances.iter().map(|d| fuel_cost(*d, pos)).sum())
-        .min().unwrap()
+        .min()
+        .unwrap()
 }
 
 fn main() {
-    println!("{}",solve())
+    println!("{}", solve())
 }
