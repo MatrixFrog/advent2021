@@ -43,9 +43,23 @@ impl Floor {
 
   // Given a low point 'p', find the size of the basin for p.
   fn basin(&self, p: (usize, usize)) -> usize {
-    let mut basin = HashSet::new();
-    basin.insert(p);
-    // TODO...
+    let mut basin: HashSet<(usize, usize)> = HashSet::new();
+    let mut additions = vec![p];
+    loop {
+      basin.extend(&additions);
+      let mut new_additions = vec![];
+      for new_pt in &additions {
+        for neighbor in self.neighbors(*new_pt) {
+          if *self.get(neighbor).unwrap() != 9 && !basin.contains(&neighbor) {
+            new_additions.push(neighbor)
+          }
+        }
+      }
+      if new_additions.is_empty() {
+        break;
+      }
+      additions = new_additions;
+    }
     basin.len()
   }
 
@@ -65,23 +79,28 @@ impl Floor {
     self.positions().map(|p| self.risk_level(p)).sum()
   }
 
-  fn solve_part2(&self) -> u32 {
-    // TODO...
-    0
+  fn solve_part2(&self) -> usize {
+    let mut basins = self
+      .low_points()
+      .map(|lp| self.basin(lp))
+      .collect::<Vec<usize>>();
+    basins.sort_unstable();
+    basins.reverse();
+    basins.iter().take(3).product()
   }
 }
 
-// fn raw_input() -> &'static str {
-//   include_str!("input.txt")
-// }
-
 fn raw_input() -> &'static str {
-  "2199943210
-3987894921
-9856789892
-8767896789
-9899965678"
+  include_str!("input.txt")
 }
+
+// fn raw_input() -> &'static str {
+//   "2199943210
+// 3987894921
+// 9856789892
+// 8767896789
+// 9899965678"
+// }
 
 fn input() -> Floor {
   let mut data = Vec::new();
