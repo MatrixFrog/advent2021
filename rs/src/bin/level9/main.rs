@@ -1,3 +1,4 @@
+use advent::grid_from_input;
 use advent::surrounding_coordinates;
 use advent::Grid;
 use std::collections::HashSet;
@@ -84,17 +85,8 @@ fn raw_input() -> &'static str {
 }
 
 fn input() -> Floor {
-  let mut data = Vec::new();
-  for l in raw_input().lines() {
-    data.push(
-      l.trim()
-        .chars()
-        .map(|c| c.to_digit(10).unwrap())
-        .collect::<Vec<u32>>(),
-    )
-  }
   Floor {
-    data: Grid::new(data),
+    data: grid_from_input(raw_input()),
   }
 }
 

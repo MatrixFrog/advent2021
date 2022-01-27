@@ -15,6 +15,18 @@ pub fn surrounding_coordinates((r, c): (usize, usize)) -> Vec<(usize, usize)> {
 pub struct Grid<T> {
   data: Vec<Vec<T>>,
 }
+pub fn grid_from_input(input: &str) -> Grid<u32> {
+  let mut data = Vec::new();
+  for l in input.lines() {
+    data.push(
+      l.trim()
+        .chars()
+        .map(|c| c.to_digit(10).unwrap())
+        .collect::<Vec<u32>>(),
+    )
+  }
+  Grid::new(data)
+}
 
 impl<T> Grid<T> {
   pub fn new(data: Vec<Vec<T>>) -> Self {
