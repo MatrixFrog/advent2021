@@ -1,8 +1,31 @@
-use advent::grid_from_input;
-use advent::surrounding_coordinates;
+use advent::positions;
 use grid::*;
-use itertools::Itertools;
 use std::collections::HashSet;
+
+fn grid_from_input(input: &str) -> Grid<u32> {
+  let mut g = grid![];
+  for l in input.lines() {
+    g.push_row(
+      l.trim()
+        .chars()
+        .map(|c| c.to_digit(10).unwrap())
+        .collect::<Vec<u32>>(),
+    );
+  }
+  g
+}
+
+// Get the coordinates of squares adjacent to the given one (not including diagonally)
+pub fn surrounding_coordinates((r, c): (usize, usize)) -> Vec<(usize, usize)> {
+  let mut sc = vec![(r + 1, c), (r, c + 1)];
+  if r != 0 {
+    sc.push((r - 1, c))
+  }
+  if c != 0 {
+    sc.push((r, c - 1))
+  }
+  sc
+}
 
 struct Floor {
   grid: Grid<u32>,
@@ -11,10 +34,6 @@ struct Floor {
 impl Floor {
   fn get(&self, (r, c): (usize, usize)) -> Option<u32> {
     self.grid.get(r, c).copied()
-  }
-
-  fn positions(&self) -> impl std::iter::Iterator<Item = (usize, usize)> {
-    (0..self.grid.rows()).cartesian_product(0..self.grid.cols())
   }
 
   fn neighbors(&self, p: (usize, usize)) -> Vec<(usize, usize)> {
@@ -37,7 +56,7 @@ impl Floor {
   }
 
   fn low_points(&self) -> impl Iterator<Item = (usize, usize)> + '_ {
-    self.positions().filter(|p| self.is_low_point(*p))
+    positions(&self.grid).filter(|p| self.is_low_point(*p))
   }
 
   // Given a low point 'p', find the size of the basin for p.
