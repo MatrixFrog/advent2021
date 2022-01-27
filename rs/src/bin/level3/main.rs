@@ -7,9 +7,9 @@ fn part1() -> i32 {
         let mut zeros = 0;
         let mut ones = 0;
         for v in &values {
-            match &v[index..index + 1] {
-                "0" => zeros += 1,
-                "1" => ones += 1,
+            match &v.chars().nth(index).unwrap() {
+                '0' => zeros += 1,
+                '1' => ones += 1,
                 nonbit => panic!("Not a bit: {}", nonbit),
             }
         }
@@ -25,20 +25,20 @@ fn part1() -> i32 {
     i32::from_str_radix(&gamma, 2).unwrap() * i32::from_str_radix(&epsilon, 2).unwrap()
 }
 
-fn more_common_bit(values: &[&str], index: usize) -> String {
+fn more_common_bit(values: &[&str], index: usize) -> char {
     let mut zeros = 0;
     let mut ones = 0;
     for v in values {
-        match &v[index..index + 1] {
-            "0" => zeros += 1,
-            "1" => ones += 1,
+        match v.chars().nth(index).unwrap() {
+            '0' => zeros += 1,
+            '1' => ones += 1,
             nonbit => panic!("Not a bit: {}", nonbit),
         }
     }
     if zeros > ones {
-        "0".to_string()
+        '0'
     } else {
-        "1".to_string()
+        '1'
     }
 }
 
@@ -46,7 +46,7 @@ fn calc_part2_oxygen() -> String {
     let mut values = input();
     for index in 0..12 {
         let mcb = more_common_bit(&values, index);
-        values.retain(|v| v[index..index + 1] == mcb);
+        values.retain(|v| v.chars().nth(index).unwrap() == mcb);
         if values.len() == 1 {
             return values[0].to_string();
         }
@@ -58,7 +58,7 @@ fn calc_part2_co2() -> String {
     let mut values = input();
     for index in 0..12 {
         let mcb = more_common_bit(&values, index);
-        values.retain(|v| v[index..index + 1] != mcb);
+        values.retain(|v| v.chars().nth(index).unwrap() != mcb);
         if values.len() == 1 {
             return values[0].to_string();
         }
