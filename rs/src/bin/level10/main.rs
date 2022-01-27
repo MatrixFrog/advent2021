@@ -10,20 +10,16 @@ fn input() -> impl Iterator<Item = &'static str> {
 enum ParseResult {
   OK, // apparently never happens
   Incomplete,
-  Corrupt(Vec<char>),
+  Corrupt(char),
 }
 
 struct Parser {
   stack: Vec<char>,
-  errors: Vec<char>,
 }
 
 impl Parser {
   fn new() -> Self {
-    Parser {
-      stack: vec![],
-      errors: vec![],
-    }
+    Parser { stack: vec![] }
   }
 
   fn check(&self, ch: char) -> bool {
@@ -39,17 +35,21 @@ impl Parser {
     }
   }
 
-  fn try_pop(&mut self, ch: char) {
+  fn try_pop(&mut self, ch: char) -> Result<(), char> {
     if self.check(ch) {
       self.stack.pop();
+      Result::Ok(())
     } else {
-      self.errors.push(ch);
+      Result::Err(ch)
     }
   }
 
-  fn handle_char(&mut self, ch: char) {
+  fn handle_char(&mut self, ch: char) -> Result<(), char> {
     match ch {
-      '(' | '[' | '{' | '<' => self.stack.push(ch),
+      '(' | '[' | '{' | '<' => {
+        self.stack.push(ch);
+        Result::Ok(())
+      }
       ')' | ']' | '}' | '>' => self.try_pop(ch),
       _ => panic!("Unexpected char {}", ch),
     }
@@ -57,14 +57,17 @@ impl Parser {
 
   fn parse_line(&mut self, line: &str) -> ParseResult {
     for ch in line.chars() {
-      self.handle_char(ch);
+      match self.handle_char(ch) {
+        Ok(_) => {}
+        Err(err_ch) => {
+          return ParseResult::Corrupt(err_ch);
+        }
+      }
     }
-    if !self.errors.is_empty() {
-      ParseResult::Corrupt(self.errors.clone())
-    } else if !self.stack.is_empty() {
+    if self.stack.is_empty() {
       ParseResult::Incomplete
     } else {
-      panic!()
+      ParseResult::OK
     }
   }
 }
@@ -74,8 +77,22 @@ fn parse_line(line: &str) -> ParseResult {
   p.parse_line(line)
 }
 
-fn main() {
+fn part1() -> i32 {
+  let mut total = 0;
   for l in input() {
-    println!("{:?}", parse_line(l));
+    if let ParseResult::Corrupt(ch) = parse_line(l) {
+      total += match ch {
+        ')' => 3,
+        ']' => 57,
+        '}' => 1197,
+        '>' => 25137,
+        _ => panic!(),
+      }
+    }
   }
+  total
+}
+
+fn main() {
+  println!("part 1: {}", part1());
 }
