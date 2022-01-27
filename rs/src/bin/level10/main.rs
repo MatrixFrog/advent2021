@@ -97,7 +97,7 @@ fn part1(results: &[ParseResult]) -> i32 {
   total
 }
 
-fn part2(results: &[ParseResult]) -> i32 {
+fn part2(_results: &[ParseResult]) -> i32 {
   panic!("TODO")
 }
 
