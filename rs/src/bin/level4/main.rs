@@ -110,8 +110,8 @@ where
   L::Item: AsRef<str>,
 {
   let mut rows: [[i32; 5]; 5] = [[0; 5]; 5];
-  for i in 0..5 {
-    rows[i] = parse_row(lines.next().unwrap().as_ref())
+  for row in &mut rows {
+    *row = parse_row(lines.next().unwrap().as_ref())
   }
 
   Board::new(&rows)
