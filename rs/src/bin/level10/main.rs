@@ -77,10 +77,14 @@ fn parse_line(line: &str) -> ParseResult {
   p.parse_line(line)
 }
 
-fn part1() -> i32 {
+fn parse_all() -> Vec<ParseResult> {
+  input().map(parse_line).collect()
+}
+
+fn part1(results: &[ParseResult]) -> i32 {
   let mut total = 0;
-  for l in input() {
-    if let ParseResult::Corrupt(ch) = parse_line(l) {
+  for r in results {
+    if let ParseResult::Corrupt(ch) = r {
       total += match ch {
         ')' => 3,
         ']' => 57,
@@ -93,6 +97,12 @@ fn part1() -> i32 {
   total
 }
 
+fn part2(results: &[ParseResult]) -> i32 {
+  panic!("TODO")
+}
+
 fn main() {
-  println!("part 1: {}", part1());
+  let results = parse_all();
+  println!("part 1: {}", part1(&results));
+  println!("part 1: {}", part2(&results));
 }
