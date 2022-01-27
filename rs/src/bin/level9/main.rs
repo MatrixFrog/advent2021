@@ -67,11 +67,7 @@ impl Floor {
   }
 
   fn risk_level(&self, p: (usize, usize)) -> u32 {
-    if self.is_low_point(p) {
-      self.get(p).unwrap() + 1
-    } else {
-      0
-    }
+    self.get(p).unwrap() + 1
   }
 
   fn positions(&self) -> impl Iterator<Item = (usize, usize)> {
@@ -79,7 +75,7 @@ impl Floor {
   }
 
   fn solve_part1(&self) -> u32 {
-    self.positions().map(|p| self.risk_level(p)).sum()
+    self.low_points().map(|p| self.risk_level(p)).sum()
   }
 
   fn solve_part2(&self) -> usize {
