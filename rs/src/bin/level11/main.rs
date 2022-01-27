@@ -77,7 +77,10 @@ impl Octos {
   fn new(grid: Grid<Octo>) -> Self {
     Self { grid, flashes: 0 }
   }
-  fn step(&mut self) {
+  fn len(&self) -> usize {
+    self.grid.flatten().len()
+  }
+  fn step(&mut self) -> usize {
     let mut to_increase = positions(&self.grid).collect::<Vec<_>>();
     while !to_increase.is_empty() {
       let mut to_increase_next = vec![];
@@ -89,10 +92,12 @@ impl Octos {
       }
       to_increase = to_increase_next;
     }
-    self.flashes += self.grid.iter().filter(|o| o.already_flashed).count();
+    let flashes_this_step = self.grid.iter().filter(|o| o.already_flashed).count();
+    self.flashes += flashes_this_step;
     for o in self.grid.iter_mut() {
       o.end_step();
     }
+    flashes_this_step
   }
 }
 
@@ -131,8 +136,11 @@ fn minigrid() -> Octos {
 fn main() {
   let mut octos = parse_input(raw_input());
   // let mut octos = minigrid();
-  for _ in 0..100 {
-    octos.step()
+  for i in 1.. {
+    let flashes = octos.step();
+    if flashes == octos.len() {
+      println!("all flashed: {}", i);
+      break;
+    }
   }
-  println!("{}", octos.flashes)
 }
