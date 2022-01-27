@@ -1,3 +1,7 @@
+fn input() -> impl Iterator<Item = &'static str> {
+    include_str!("input.txt").lines()
+}
+
 struct Position {
     horizontal: i32,
     depth: i32,
@@ -21,15 +25,13 @@ fn update(pos: &mut Position, command: &str) {
 }
 
 fn main() {
-    let raw_input = include_str!("input.txt");
-
     let mut pos = Position {
         horizontal: 0,
         depth: 0,
         aim: 0,
     };
 
-    for line in raw_input.lines() {
+    for line in input() {
         update(&mut pos, line)
     }
 
