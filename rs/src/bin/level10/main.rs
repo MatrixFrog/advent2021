@@ -9,7 +9,7 @@ fn input() -> impl Iterator<Item = &'static str> {
 #[derive(Debug)]
 enum ParseResult {
   OK, // apparently never happens
-  Incomplete,
+  Incomplete(Vec<char>),
   Corrupt(char),
 }
 
@@ -65,9 +65,9 @@ impl Parser {
       }
     }
     if self.stack.is_empty() {
-      ParseResult::Incomplete
-    } else {
       ParseResult::OK
+    } else {
+      ParseResult::Incomplete(self.stack.clone())
     }
   }
 }
@@ -97,8 +97,40 @@ fn part1(results: &[ParseResult]) -> i32 {
   total
 }
 
-fn part2(_results: &[ParseResult]) -> i32 {
-  panic!("TODO")
+fn val(ch: char) -> i64 {
+  match ch {
+    '(' => 1,
+    '[' => 2,
+    '{' => 3,
+    '<' => 4,
+    _ => panic!(),
+  }
+}
+
+fn score(stack: &[char]) -> i64 {
+  let mut score: i64 = 0;
+  for ch in stack.iter().rev() {
+    score = score * 5 + val(*ch);
+  }
+  score
+}
+
+fn scores(results: &[ParseResult]) -> Vec<i64> {
+  let mut scores = vec![];
+  // Instead of filling in the )]}>'s, just look at what's left on the stack, in reverse order
+  for r in results {
+    if let ParseResult::Incomplete(stack) = r {
+      scores.push(score(stack))
+    }
+  }
+  scores
+}
+
+fn part2(results: &[ParseResult]) -> i64 {
+  let mut scores = scores(results);
+  assert_eq!(scores.len() % 2, 1);
+  scores.sort_unstable();
+  *scores.get(scores.len() / 2).unwrap()
 }
 
 fn main() {
