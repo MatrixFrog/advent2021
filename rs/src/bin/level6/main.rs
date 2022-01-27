@@ -29,19 +29,20 @@ fn tick(aquarium: &HashMap<u8, u64>) -> HashMap<u8, u64> {
   new_aquarium
 }
 
-fn solve(part: i32) -> u64 {
-  let turns = match part {
-    1 => 80,
-    2 => 256,
-    _ => panic!("no"),
-  };
+fn solve() -> (u64, u64) {
+  let mut part1 = 0;
   let mut aquarium = input_as_map();
-  for _ in 0..turns {
+  for i in 0..256 {
     aquarium = tick(&aquarium);
+    if i == 79 {
+      part1 = aquarium.values().sum::<u64>();
+    }
   }
-  aquarium.values().sum::<u64>()
+
+  let part2 = aquarium.values().sum::<u64>();
+  (part1, part2)
 }
 
 fn main() {
-  println!("1: {}\n2: {}", solve(1), solve(2));
+  println!("{:?}", solve());
 }
