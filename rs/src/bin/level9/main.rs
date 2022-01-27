@@ -1,24 +1,18 @@
-use itertools::Itertools;
+use advent::surrounding_coordinates;
+use advent::Grid;
 use std::collections::HashSet;
 
 struct Floor {
-  data: Vec<Vec<u32>>,
-}
-
-fn surrounding_coordinates((r, c): (usize, usize)) -> Vec<(usize, usize)> {
-  let mut sc = vec![(r + 1, c), (r, c + 1)];
-  if r != 0 {
-    sc.push((r - 1, c))
-  }
-  if c != 0 {
-    sc.push((r, c - 1))
-  }
-  sc
+  data: Grid<u32>,
 }
 
 impl Floor {
-  fn get(&self, (r, c): (usize, usize)) -> Option<&u32> {
-    self.data.get(r).and_then(|row| row.get(c))
+  fn get(&self, p: (usize, usize)) -> Option<u32> {
+    self.data.get(p).copied()
+  }
+
+  fn positions(&self) -> impl std::iter::Iterator<Item = (usize, usize)> {
+    self.data.positions()
   }
 
   fn neighbors(&self, p: (usize, usize)) -> Vec<(usize, usize)> {
@@ -53,7 +47,7 @@ impl Floor {
       let mut new_additions = vec![];
       for new_pt in &additions {
         for neighbor in self.neighbors(*new_pt) {
-          if *self.get(neighbor).unwrap() != 9 && !basin.contains(&neighbor) {
+          if self.get(neighbor).unwrap() != 9 && !basin.contains(&neighbor) {
             new_additions.push(neighbor)
           }
         }
@@ -68,10 +62,6 @@ impl Floor {
 
   fn risk_level(&self, p: (usize, usize)) -> u32 {
     self.get(p).unwrap() + 1
-  }
-
-  fn positions(&self) -> impl Iterator<Item = (usize, usize)> {
-    (0..self.data.len()).cartesian_product(0..self.data[0].len())
   }
 
   fn solve_part1(&self) -> u32 {
@@ -103,7 +93,9 @@ fn input() -> Floor {
         .collect::<Vec<u32>>(),
     )
   }
-  Floor { data }
+  Floor {
+    data: Grid::new(data),
+  }
 }
 
 fn main() {
