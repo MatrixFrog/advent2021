@@ -5,7 +5,7 @@ struct Floor {
   data: Vec<Vec<u32>>,
 }
 
-fn surrounding_coordinates((r, c): (usize, usize)) -> impl Iterator<Item = (usize, usize)> {
+fn surrounding_coordinates((r, c): (usize, usize)) -> Vec<(usize, usize)> {
   let mut sc = vec![(r + 1, c), (r, c + 1)];
   if r != 0 {
     sc.push((r - 1, c))
@@ -13,7 +13,7 @@ fn surrounding_coordinates((r, c): (usize, usize)) -> impl Iterator<Item = (usiz
   if c != 0 {
     sc.push((r, c - 1))
   }
-  sc.into_iter()
+  sc
 }
 
 impl Floor {
@@ -21,8 +21,11 @@ impl Floor {
     self.data.get(r).and_then(|row| row.get(c))
   }
 
-  fn neighbors(&self, p: (usize, usize)) -> impl Iterator<Item = (usize, usize)> + '_ {
-    surrounding_coordinates(p).filter(|sc| self.get(*sc).is_some())
+  fn neighbors(&self, p: (usize, usize)) -> Vec<(usize, usize)> {
+    surrounding_coordinates(p)
+      .into_iter()
+      .filter(|&sc| self.get(sc).is_some())
+      .collect::<Vec<(usize, usize)>>()
   }
 
   fn is_low_point(&self, p: (usize, usize)) -> bool {
