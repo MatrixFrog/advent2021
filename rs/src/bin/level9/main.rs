@@ -97,14 +97,6 @@ fn raw_input() -> &'static str {
   include_str!("input.txt")
 }
 
-// fn raw_input() -> &'static str {
-//   "2199943210
-// 3987894921
-// 9856789892
-// 8767896789
-// 9899965678"
-// }
-
 fn input() -> Floor {
   let mut data = Vec::new();
   for l in raw_input().lines() {
