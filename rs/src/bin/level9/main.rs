@@ -1,19 +1,20 @@
 use advent::grid_from_input;
 use advent::surrounding_coordinates;
-use advent::Grid;
+use grid::*;
+use itertools::Itertools;
 use std::collections::HashSet;
 
 struct Floor {
-  data: Grid<u32>,
+  grid: Grid<u32>,
 }
 
 impl Floor {
-  fn get(&self, p: (usize, usize)) -> Option<u32> {
-    self.data.get(p).copied()
+  fn get(&self, (r, c): (usize, usize)) -> Option<u32> {
+    self.grid.get(r, c).copied()
   }
 
   fn positions(&self) -> impl std::iter::Iterator<Item = (usize, usize)> {
-    self.data.positions()
+    (0..self.grid.rows()).cartesian_product(0..self.grid.cols())
   }
 
   fn neighbors(&self, p: (usize, usize)) -> Vec<(usize, usize)> {
@@ -86,7 +87,7 @@ fn raw_input() -> &'static str {
 
 fn input() -> Floor {
   Floor {
-    data: grid_from_input(raw_input()),
+    grid: grid_from_input(raw_input()),
   }
 }
 
