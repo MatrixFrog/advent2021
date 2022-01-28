@@ -1,37 +1,30 @@
-use grid::Grid;
+use std::collections::HashSet;
 
 fn raw_input() -> &'static str {
   include_str!("input.txt")
 }
+
+type Point = (usize, usize);
 
 #[derive(Debug)]
 enum FoldType {
   X,
   Y,
 }
+
 #[derive(Debug)]
 struct Fold {
   fold_type: FoldType,
   value: usize,
 }
 
-fn parse_coord_line(line: &str) -> (usize, usize) {
+fn parse_coord_line(line: &str) -> Point {
   let coords = line
     .split(',')
     .map(|c| c.parse::<usize>().unwrap())
     .collect::<Vec<_>>();
   assert_eq!(2, coords.len());
   (coords[0], coords[1])
-}
-
-fn build_grid(points: &[(usize, usize)]) -> Grid<bool> {
-  let columns = *points.iter().map(|(x, _)| x).max().unwrap() + 1;
-  let rows = *points.iter().map(|(_, y)| y).max().unwrap() + 1;
-  let mut g = Grid::new(rows, columns);
-  for (x, y) in points {
-    *g.get_mut(*y, *x).unwrap() = true;
-  }
-  g
 }
 
 fn parse_fold(line: &str) -> Fold {
@@ -48,45 +41,66 @@ fn parse_fold(line: &str) -> Fold {
   Fold { fold_type, value }
 }
 
-fn input() -> (Grid<bool>, Vec<Fold>) {
-  let mut points = vec![];
+fn input() -> (HashSet<Point>, Vec<Fold>) {
+  let mut points = HashSet::new();
   let mut lines = raw_input().lines();
   loop {
     let line = lines.next().unwrap().trim();
     if line.is_empty() {
       break;
     }
-    points.push(parse_coord_line(line));
+    points.insert(parse_coord_line(line));
   }
   let mut folds = vec![];
   for line in lines {
     folds.push(parse_fold(line))
   }
-  (build_grid(&points), folds)
+  (points, folds)
 }
 
-fn apply_fold(g: &mut Grid<bool>, fold: &Fold) {
+fn apply_fold(points: &mut HashSet<Point>, fold: &Fold) {
   match fold {
     Fold {
-      fold_type: X,
+      fold_type: FoldType::X,
       value,
     } => {
-      let mut x = 1;
-      loop {
-        if value + x == g.cols() {
-          break;
+      let mut new_dots: Vec<Point> = vec![];
+      let mut old_dots: Vec<Point> = vec![];
+      for (x, y) in points.iter() {
+        if x < value { /* no effect */
+        } else {
+          old_dots.push((*x, *y));
+          new_dots.push((value - (x - value), *y));
         }
-        for (row, sq) in g.iter_col(value + x).enumerate() {
-          *g.get_mut(row, value - x).unwrap() |= sq;
-        }
-        x += 1;
+      }
+      points.extend(new_dots);
+      for d in old_dots {
+        points.remove(&d);
       }
     }
-    _ => panic!("not implemented"),
+    Fold {
+      fold_type: FoldType::Y,
+      value,
+    } => {
+      let mut new_dots: Vec<Point> = vec![];
+      let mut old_dots: Vec<Point> = vec![];
+      for (x, y) in points.iter() {
+        if y < value { /* no effect */
+        } else {
+          old_dots.push((*x, *y));
+          new_dots.push((*x, value - (y - value)));
+        }
+      }
+      points.extend(new_dots);
+      for d in old_dots {
+        points.remove(&d);
+      }
+    }
   }
 }
 
 fn main() {
-  let (grid, folds) = input();
-  println!("{:?}", folds[0]);
+  let (mut points, folds) = input();
+  apply_fold(&mut points, &folds[0]);
+  println!("{}", points.len());
 }
