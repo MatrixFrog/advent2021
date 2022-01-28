@@ -1,3 +1,4 @@
+// TODO maybe try redoing this with Grid and Cell.
 use std::collections::HashSet;
 
 fn raw_input() -> &'static str {
