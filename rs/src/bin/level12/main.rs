@@ -73,13 +73,13 @@ fn parse_input(input: &str) -> (UnGraph<CaveSize, ()>, NodeIndex, NodeIndex) {
 //
 // If there are none (because there is no way to continue without
 // illegally double-visiting a cave), returns an empty Vec.
-fn extend_path(g: &UnGraph<CaveSize, ()>, path: &Vec<NodeIndex>) -> Vec<Vec<NodeIndex>> {
+fn extend_path(g: &UnGraph<CaveSize, ()>, path: &[NodeIndex]) -> Vec<Vec<NodeIndex>> {
   let mut paths = vec![];
   for neighbor in g.neighbors(*path.last().unwrap()) {
     if *g.node_weight(neighbor).unwrap() == CaveSize::Small && path.contains(&neighbor) {
       // Can't visit this neighbor again
     } else {
-      let mut new_path = path.clone();
+      let mut new_path = path.to_owned();
       new_path.push(neighbor);
       paths.push(new_path);
     }
