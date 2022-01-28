@@ -17,7 +17,7 @@ fn parse_rule(line: &str) -> Rule {
   ((a, b), parts[1].chars().next().unwrap())
 }
 
-fn input() -> (Vec<char>, Vec<Rule>) {
+fn input() -> (Vec<char>, HashMap<(char, char), char>) {
   let mut lines = raw_input().lines();
   let start = lines.next().unwrap();
   assert_eq!(Some(""), lines.next());
@@ -25,22 +25,12 @@ fn input() -> (Vec<char>, Vec<Rule>) {
   (start.chars().collect(), rules)
 }
 
-fn apply(state: &mut Vec<char>, rules: &[Rule]) {
-  let mut insertions = vec![];
-  for w in state.windows(2) {
-    match w {
-      [a, b] => {
-        for ((ra, rb), r) in rules {
-          if (ra, rb) == (a, b) {
-            insertions.push(r);
-            break;
-          }
-        }
-      }
-      _ => panic!("nope"),
-    }
-  }
-  *state = state.iter().interleave(insertions).copied().collect();
+fn apply(state: &[char], rules: &HashMap<(char, char), char>) -> Vec<char> {
+  let insertions = state.windows(2).map(|w| match w {
+    [a, b] => rules[&(*a, *b)],
+    _ => panic!("nope"),
+  });
+  state.iter().copied().interleave(insertions).collect()
 }
 
 fn get_answer(state: &[char]) -> i32 {
@@ -57,7 +47,7 @@ fn main() {
   let (mut state, rules) = input();
   for _ in 0..10 {
     // println!("{:?}", state);
-    apply(&mut state, &rules);
+    state = apply(&state, &rules);
   }
   println!("{}", get_answer(&state))
 }
