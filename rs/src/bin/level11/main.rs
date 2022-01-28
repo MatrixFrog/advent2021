@@ -118,7 +118,7 @@ fn parse_input(input: &str) -> Octos {
   Octos::new(grid)
 }
 
-fn minigrid() -> Octos {
+fn _minigrid() -> Octos {
   let grid: Grid<u32> = grid![
     [1, 1, 1, 1, 1]
     [1, 9, 9, 9, 1]
