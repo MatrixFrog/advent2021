@@ -99,8 +99,25 @@ fn apply_fold(points: &mut HashSet<Point>, fold: &Fold) {
   }
 }
 
+fn print_grid(points: &HashSet<Point>) {
+  let width = *points.iter().map(|(x, _)| x).max().unwrap();
+  let height = *points.iter().map(|(_, y)| y).max().unwrap();
+  for y in 0..=height {
+    for x in 0..=width {
+      if points.contains(&(x, y)) {
+        print!("#");
+      } else {
+        print!(".");
+      }
+    }
+    println!();
+  }
+}
+
 fn main() {
   let (mut points, folds) = input();
-  apply_fold(&mut points, &folds[0]);
-  println!("{}", points.len());
+  for f in folds {
+    apply_fold(&mut points, &f);
+  }
+  print_grid(&points);
 }
