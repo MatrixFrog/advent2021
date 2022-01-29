@@ -19,12 +19,12 @@ fn parse_rule(line: &str) -> Rule {
   ((a, b), parts[1].chars().next().unwrap())
 }
 
-fn input() -> (Box<State>, Rules) {
+fn input() -> (impl Iterator<Item = char>, Rules) {
   let mut lines = raw_input().lines();
   let start = lines.next().unwrap();
   assert_eq!(Some(""), lines.next());
   let rules = lines.map(parse_rule).collect();
-  (Box::new(start.chars()), rules)
+  (start.chars(), rules)
 }
 
 struct RuleApplier {
@@ -86,5 +86,5 @@ fn solve(initial_state: Box<State>, rules: Rules) -> i64 {
 
 fn main() {
   let (initial_state, rules) = input();
-  println!("{}", solve(initial_state, rules));
+  println!("{}", solve(Box::new(initial_state), rules));
 }
