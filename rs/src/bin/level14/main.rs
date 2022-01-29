@@ -1,5 +1,5 @@
-use itertools::Itertools;
 use std::collections::HashMap;
+use std::iter::Peekable;
 
 type Rule = ((char, char), char);
 
@@ -17,23 +17,54 @@ fn parse_rule(line: &str) -> Rule {
   ((a, b), parts[1].chars().next().unwrap())
 }
 
-fn input() -> (Vec<char>, HashMap<(char, char), char>) {
+fn input() -> (Box<dyn Iterator<Item = char>>, HashMap<(char, char), char>) {
   let mut lines = raw_input().lines();
   let start = lines.next().unwrap();
   assert_eq!(Some(""), lines.next());
   let rules = lines.map(parse_rule).collect();
-  (start.chars().collect(), rules)
+  (Box::new(start.chars()), rules)
 }
 
-fn apply(state: &[char], rules: &HashMap<(char, char), char>) -> Vec<char> {
-  let insertions = state.windows(2).map(|w| match w {
-    [a, b] => rules[&(*a, *b)],
-    _ => panic!("nope"),
-  });
-  state.iter().copied().interleave(insertions).collect()
+struct RuleApplier<'a> {
+  rules: &'a HashMap<(char, char), char>,
+  prev_state: Peekable<Box<dyn Iterator<Item = char>>>,
+  // The most recent char from prev_state, or none if the most recent
+  // char returned was an inserted char.
+  data: Option<char>,
 }
 
-fn get_answer(state: &[char]) -> i32 {
+impl<'a> Iterator for RuleApplier<'a> {
+  type Item = char;
+  fn next(&mut self) -> Option<char> {
+    match self.data {
+      None => {
+        self.data = self.prev_state.next();
+        self.data
+      }
+      Some(c) => {
+        self.data = None;
+        let next_next = self.prev_state.peek();
+        match next_next {
+          None => None,
+          Some(&nn) => Some(self.rules[&(c, nn)]),
+        }
+      }
+    }
+  }
+}
+
+fn apply<'a>(
+  state: Box<dyn Iterator<Item = char>>,
+  rules: &'a HashMap<(char, char), char>,
+) -> Box<dyn Iterator<Item = char> + 'a> {
+  Box::new(RuleApplier {
+    rules,
+    prev_state: state.peekable(),
+    data: None,
+  })
+}
+
+fn get_answer(state: Box<dyn Iterator<Item = char>>) -> i64 {
   let mut freq_map = HashMap::new();
   for ch in state {
     *freq_map.entry(ch).or_insert(0) += 1;
@@ -43,11 +74,14 @@ fn get_answer(state: &[char]) -> i32 {
   most_common - least_common
 }
 
+fn solve(state: Box<dyn Iterator<Item = char>>, rules: &HashMap<(char, char), char>) -> i64 {
+  for _ in 0..10 {
+    state = apply(state, rules);
+  }
+  get_answer(state)
+}
+
 fn main() {
   let (mut state, rules) = input();
-  for _ in 0..10 {
-    // println!("{:?}", state);
-    state = apply(&state, &rules);
-  }
-  println!("{}", get_answer(&state))
+  println!("{}", solve(state, &rules));
 }
