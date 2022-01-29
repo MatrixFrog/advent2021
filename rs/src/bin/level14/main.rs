@@ -25,15 +25,15 @@ fn input() -> (Box<dyn Iterator<Item = char>>, HashMap<(char, char), char>) {
   (Box::new(start.chars()), rules)
 }
 
-struct RuleApplier<'a> {
-  rules: &'a HashMap<(char, char), char>,
+struct RuleApplier {
+  rules: HashMap<(char, char), char>,
   prev_state: Peekable<Box<dyn Iterator<Item = char>>>,
   // The most recent char from prev_state, or none if the most recent
   // char returned was an inserted char.
   data: Option<char>,
 }
 
-impl Iterator for RuleApplier<'_> {
+impl Iterator for RuleApplier {
   type Item = char;
   fn next(&mut self) -> Option<char> {
     match self.data {
@@ -55,10 +55,10 @@ impl Iterator for RuleApplier<'_> {
 
 fn apply(
   state: Box<dyn Iterator<Item = char>>,
-  rules: &HashMap<(char, char), char>,
-) -> impl Iterator<Item = char> + '_ {
+  rules: HashMap<(char, char), char>,
+) -> impl Iterator<Item = char> {
   RuleApplier {
-    rules,
+    rules: rules.clone(),
     prev_state: state.peekable(),
     data: None,
   }
@@ -74,14 +74,15 @@ fn get_answer(state: impl Iterator<Item = char>) -> i64 {
   most_common - least_common
 }
 
-fn solve(state: Box<dyn Iterator<Item = char>>, rules: &HashMap<(char, char), char>) -> i64 {
-  for _ in 0..10 {
-    state = Box::new(apply(state, rules));
+fn solve(initial_state: Box<dyn Iterator<Item = char>>, rules: HashMap<(char, char), char>) -> i64 {
+  let mut state = initial_state;
+  for _ in 0..40 {
+    state = Box::new(apply(state, rules.clone()));
   }
   get_answer(state)
 }
 
 fn main() {
-  let (mut state, rules) = input();
-  println!("{}", solve(state, &rules));
+  let (initial_state, rules) = input();
+  println!("{}", solve(initial_state, rules));
 }
