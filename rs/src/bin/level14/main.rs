@@ -33,7 +33,7 @@ struct RuleApplier<'a> {
   data: Option<char>,
 }
 
-impl<'a> Iterator for RuleApplier<'a> {
+impl Iterator for RuleApplier<'_> {
   type Item = char;
   fn next(&mut self) -> Option<char> {
     match self.data {
@@ -53,18 +53,18 @@ impl<'a> Iterator for RuleApplier<'a> {
   }
 }
 
-fn apply<'a>(
+fn apply(
   state: Box<dyn Iterator<Item = char>>,
-  rules: &'a HashMap<(char, char), char>,
-) -> Box<dyn Iterator<Item = char> + 'a> {
-  Box::new(RuleApplier {
+  rules: &HashMap<(char, char), char>,
+) -> impl Iterator<Item = char> + '_ {
+  RuleApplier {
     rules,
     prev_state: state.peekable(),
     data: None,
-  })
+  }
 }
 
-fn get_answer(state: Box<dyn Iterator<Item = char>>) -> i64 {
+fn get_answer(state: impl Iterator<Item = char>) -> i64 {
   let mut freq_map = HashMap::new();
   for ch in state {
     *freq_map.entry(ch).or_insert(0) += 1;
@@ -76,7 +76,7 @@ fn get_answer(state: Box<dyn Iterator<Item = char>>) -> i64 {
 
 fn solve(state: Box<dyn Iterator<Item = char>>, rules: &HashMap<(char, char), char>) -> i64 {
   for _ in 0..10 {
-    state = apply(state, rules);
+    state = Box::new(apply(state, rules));
   }
   get_answer(state)
 }
