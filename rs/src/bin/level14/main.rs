@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::iter::Peekable;
 
-type Rule = ((char, char), char);
-type Rules = HashMap<(char, char), char>;
-type State = dyn Iterator<Item = char>;
+type Rule = ((u8, u8), u8);
+type Rules = HashMap<(u8, u8), u8>;
+type State = dyn Iterator<Item = u8>;
 
 fn raw_input() -> &'static str {
   include_str!("input.txt")
@@ -14,17 +14,17 @@ fn parse_rule(line: &str) -> Rule {
   assert_eq!(2, parts.len());
   assert_eq!(2, parts[0].len());
   assert_eq!(1, parts[1].len());
-  let mut left_side = parts[0].chars();
+  let mut left_side = parts[0].bytes();
   let (a, b) = (left_side.next().unwrap(), left_side.next().unwrap());
-  ((a, b), parts[1].chars().next().unwrap())
+  ((a, b), parts[1].bytes().next().unwrap())
 }
 
-fn input() -> (impl Iterator<Item = char>, Rules) {
+fn input() -> (impl Iterator<Item = u8>, Rules) {
   let mut lines = raw_input().lines();
   let start = lines.next().unwrap();
   assert_eq!(Some(""), lines.next());
   let rules = lines.map(parse_rule).collect();
-  (start.chars(), rules)
+  (start.bytes(), rules)
 }
 
 struct RuleApplier {
@@ -32,12 +32,12 @@ struct RuleApplier {
   prev_state: Peekable<Box<State>>,
   // The most recent char from prev_state, or none if the most recent
   // char returned was an inserted char.
-  data: Option<char>,
+  data: Option<u8>,
 }
 
 impl Iterator for RuleApplier {
-  type Item = char;
-  fn next(&mut self) -> Option<char> {
+  type Item = u8;
+  fn next(&mut self) -> Option<u8> {
     match self.data {
       None => {
         self.data = self.prev_state.next();
@@ -55,7 +55,7 @@ impl Iterator for RuleApplier {
   }
 }
 
-fn apply(state: Box<State>, rules: Rules) -> impl Iterator<Item = char> {
+fn apply(state: Box<State>, rules: Rules) -> impl Iterator<Item = u8> {
   RuleApplier {
     rules: rules.clone(),
     prev_state: state.peekable(),
@@ -63,7 +63,7 @@ fn apply(state: Box<State>, rules: Rules) -> impl Iterator<Item = char> {
   }
 }
 
-fn get_answer(state: impl Iterator<Item = char>) -> i64 {
+fn get_answer(state: impl Iterator<Item = u8>) -> i64 {
   let mut freq_map = HashMap::new();
   for ch in state {
     *freq_map.entry(ch).or_insert(0) += 1;
