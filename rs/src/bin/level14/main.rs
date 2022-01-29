@@ -2,6 +2,8 @@ use std::collections::HashMap;
 use std::iter::Peekable;
 
 type Rule = ((char, char), char);
+type Rules = HashMap<(char, char), char>;
+type State = dyn Iterator<Item = char>;
 
 fn raw_input() -> &'static str {
   include_str!("input.txt")
@@ -17,7 +19,7 @@ fn parse_rule(line: &str) -> Rule {
   ((a, b), parts[1].chars().next().unwrap())
 }
 
-fn input() -> (Box<dyn Iterator<Item = char>>, HashMap<(char, char), char>) {
+fn input() -> (Box<State>, Rules) {
   let mut lines = raw_input().lines();
   let start = lines.next().unwrap();
   assert_eq!(Some(""), lines.next());
@@ -26,8 +28,8 @@ fn input() -> (Box<dyn Iterator<Item = char>>, HashMap<(char, char), char>) {
 }
 
 struct RuleApplier {
-  rules: HashMap<(char, char), char>,
-  prev_state: Peekable<Box<dyn Iterator<Item = char>>>,
+  rules: Rules,
+  prev_state: Peekable<Box<State>>,
   // The most recent char from prev_state, or none if the most recent
   // char returned was an inserted char.
   data: Option<char>,
@@ -53,10 +55,7 @@ impl Iterator for RuleApplier {
   }
 }
 
-fn apply(
-  state: Box<dyn Iterator<Item = char>>,
-  rules: HashMap<(char, char), char>,
-) -> impl Iterator<Item = char> {
+fn apply(state: Box<State>, rules: Rules) -> impl Iterator<Item = char> {
   RuleApplier {
     rules: rules.clone(),
     prev_state: state.peekable(),
@@ -66,15 +65,18 @@ fn apply(
 
 fn get_answer(state: impl Iterator<Item = char>) -> i64 {
   let mut freq_map = HashMap::new();
-  for ch in state {
+  for (i, ch) in state.enumerate() {
     *freq_map.entry(ch).or_insert(0) += 1;
+    if i % 10000000 == 0 {
+      println!("{}", i);
+    }
   }
   let most_common = freq_map.values().max().unwrap();
   let least_common = freq_map.values().min().unwrap();
   most_common - least_common
 }
 
-fn solve(initial_state: Box<dyn Iterator<Item = char>>, rules: HashMap<(char, char), char>) -> i64 {
+fn solve(initial_state: Box<State>, rules: Rules) -> i64 {
   let mut state = initial_state;
   for _ in 0..40 {
     state = Box::new(apply(state, rules.clone()));
