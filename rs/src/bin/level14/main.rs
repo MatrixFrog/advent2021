@@ -65,11 +65,8 @@ fn apply(state: Box<State>, rules: Rules) -> impl Iterator<Item = char> {
 
 fn get_answer(state: impl Iterator<Item = char>) -> i64 {
   let mut freq_map = HashMap::new();
-  for (i, ch) in state.enumerate() {
+  for ch in state {
     *freq_map.entry(ch).or_insert(0) += 1;
-    if i % 10000000 == 0 {
-      println!("{}", i);
-    }
   }
   let most_common = freq_map.values().max().unwrap();
   let least_common = freq_map.values().min().unwrap();
@@ -78,7 +75,7 @@ fn get_answer(state: impl Iterator<Item = char>) -> i64 {
 
 fn solve(initial_state: Box<State>, rules: Rules) -> i64 {
   let mut state = initial_state;
-  for _ in 0..40 {
+  for _ in 0..20 {
     state = Box::new(apply(state, rules.clone()));
   }
   get_answer(state)
