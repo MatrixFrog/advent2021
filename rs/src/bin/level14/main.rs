@@ -1,8 +1,27 @@
+use nohash::BuildNoHashHasher;
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 use std::iter::Peekable;
 
-type Rule = ((u8, u8), u8);
-type Rules = HashMap<(u8, u8), u8>;
+type Rule = (CharPair, u8);
+type Rules = HashMap<CharPair, u8, BuildNoHashHasher<CharPair>>;
+
+#[derive(Eq, Clone)]
+struct CharPair((u8, u8));
+
+impl PartialEq for CharPair {
+  fn eq(&self, other: &CharPair) -> bool {
+    self.0 == other.0
+  }
+}
+
+impl Hash for CharPair {
+  fn hash<H: Hasher>(&self, hasher: &mut H) {
+    let (a, b) = self.0;
+    hasher.write_u16(((a as u16) << 8) + (b as u16));
+  }
+}
+impl nohash::IsEnabled for CharPair {}
 
 fn raw_input() -> &'static str {
   include_str!("input.txt")
@@ -15,15 +34,17 @@ fn parse_rule(line: &str) -> Rule {
   assert_eq!(1, parts[1].len());
   let mut left_side = parts[0].bytes();
   let (a, b) = (left_side.next().unwrap(), left_side.next().unwrap());
-  ((a, b), parts[1].bytes().next().unwrap())
+  (CharPair((a, b)), parts[1].bytes().next().unwrap())
 }
 
 fn input() -> (impl Iterator<Item = u8>, Rules) {
   let mut lines = raw_input().lines();
   let start = lines.next().unwrap();
   assert_eq!(Some(""), lines.next());
-  let rules = lines.map(parse_rule).collect();
-  (start.bytes(), rules)
+  let rules = lines.map(parse_rule);
+  let mut rule_map = HashMap::with_hasher(BuildNoHashHasher::default());
+  rule_map.extend(rules);
+  (start.bytes(), rule_map)
 }
 
 struct RuleApplier<'a> {
@@ -47,7 +68,7 @@ impl<'a> Iterator for RuleApplier<'a> {
         let next_next = self.prev_state.peek();
         match next_next {
           None => None,
-          Some(&nn) => Some(self.rules[&(c, nn)]),
+          Some(&nn) => Some(self.rules[&CharPair((c, nn))]),
         }
       }
     }
