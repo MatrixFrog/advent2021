@@ -3,7 +3,6 @@ use std::iter::Peekable;
 
 type Rule = ((u8, u8), u8);
 type Rules = HashMap<(u8, u8), u8>;
-type State = dyn Iterator<Item = u8>;
 
 fn raw_input() -> &'static str {
   include_str!("input.txt")
@@ -29,7 +28,7 @@ fn input() -> (impl Iterator<Item = u8>, Rules) {
 
 struct RuleApplier {
   rules: Rules,
-  prev_state: Peekable<Box<State>>,
+  prev_state: Peekable<Box<dyn Iterator<Item = u8>>>,
   // The most recent char from prev_state, or none if the most recent
   // char returned was an inserted char.
   data: Option<u8>,
@@ -55,7 +54,7 @@ impl Iterator for RuleApplier {
   }
 }
 
-fn apply(state: Box<State>, rules: Rules) -> impl Iterator<Item = u8> {
+fn apply(state: Box<dyn Iterator<Item = u8>>, rules: Rules) -> impl Iterator<Item = u8> {
   RuleApplier {
     rules: rules.clone(),
     prev_state: state.peekable(),
@@ -73,7 +72,7 @@ fn get_answer(state: impl Iterator<Item = u8>) -> i64 {
   most_common - least_common
 }
 
-fn solve(initial_state: Box<State>, rules: Rules) -> i64 {
+fn solve(initial_state: Box<dyn Iterator<Item = u8>>, rules: Rules) -> i64 {
   let mut state = initial_state;
   for _ in 0..20 {
     state = Box::new(apply(state, rules.clone()));
