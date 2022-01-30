@@ -1,3 +1,6 @@
 # Input files
 *.txt
 rs/target/
+
+perf.data*
+flamegraph.svg

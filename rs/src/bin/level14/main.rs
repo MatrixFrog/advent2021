@@ -77,7 +77,7 @@ fn get_answer(state: impl Iterator<Item = u8>) -> i64 {
 
 fn solve<'a>(initial_state: Box<dyn Iterator<Item = u8> + 'a>, rules: &'a Rules) -> i64 {
   let mut state = initial_state;
-  for _ in 0..10 {
+  for _ in 0..20 {
     state = Box::new(apply(state, rules));
   }
   get_answer(state)
