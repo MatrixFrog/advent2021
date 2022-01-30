@@ -28,7 +28,7 @@ fn input() -> (impl Iterator<Item = u8>, Rules) {
 
 struct RuleApplier<'a> {
   rules: &'a Rules,
-  prev_state: Peekable<Box<dyn Iterator<Item = u8>>>,
+  prev_state: Peekable<Box<dyn Iterator<Item = u8> + 'a>>,
   // The most recent char from prev_state, or none if the most recent
   // char returned was an inserted char.
   data: Option<u8>,
@@ -55,7 +55,7 @@ impl<'a> Iterator for RuleApplier<'a> {
 }
 
 fn apply<'a>(
-  state: Box<dyn Iterator<Item = u8>>,
+  state: Box<dyn Iterator<Item = u8> + 'a>,
   rules: &'a Rules,
 ) -> impl Iterator<Item = u8> + 'a {
   RuleApplier {
@@ -75,9 +75,9 @@ fn get_answer(state: impl Iterator<Item = u8>) -> i64 {
   most_common - least_common
 }
 
-fn solve<'a>(initial_state: Box<dyn Iterator<Item = u8>>, rules: &'a Rules) -> i64 {
+fn solve<'a>(initial_state: Box<dyn Iterator<Item = u8> + 'a>, rules: &'a Rules) -> i64 {
   let mut state = initial_state;
-  for _ in 0..20 {
+  for _ in 0..10 {
     state = Box::new(apply(state, rules));
   }
   get_answer(state)
