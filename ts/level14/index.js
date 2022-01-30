@@ -1,8 +1,11 @@
 import { readFileSync } from "fs";
 
-const input = readFileSync("./level14/input.txt", "utf-8");
-
-let [initialState, _, ...ruleLines] = input.split("\n");
+function parseInput() {
+  const input = readFileSync("./level14/input.txt", "utf-8");
+  let [initialState, _, ...ruleLines] = input.split("\n");
+  const rules = parseRules(ruleLines);
+  return [initialState, rules];
+}
 
 function parseRule(ruleLine) {
   return ruleLine.split(" -> ");
@@ -16,8 +19,6 @@ function parseRules(ruleLines) {
   }
   return result;
 }
-
-const rules = parseRules(ruleLines);
 
 function* applyGen(prevState, rules) {
   for (let i = 0; i < prevState.length - 1; i++) {
@@ -35,15 +36,24 @@ function apply(prevState, rules) {
   return state;
 }
 
-let state = initialState;
-for (let i = 0; i < 10; i++) {
-  state = apply(state, rules);
+function solve(initialState, rules) {
+  let state = initialState;
+  for (let i = 0; i < 10; i++) {
+    state = apply(state, rules);
+  }
+
+  const freq = {};
+  for (let ch of state) {
+    freq[ch] = (freq[ch] || 0) + 1;
+  }
+  const frequencies = Object.values(freq);
+  frequencies.sort((a, b) => a - b);
+  console.log(frequencies[frequencies.length - 1] - frequencies[0]);
 }
 
-const freq = {};
-for (let ch of state) {
-  freq[ch] = (freq[ch] || 0) + 1;
+function main() {
+  const [initialState, rules] = parseInput();
+  solve(initialState, rules);
 }
-const frequencies = Object.values(freq);
-frequencies.sort((a, b) => a - b);
-console.log(frequencies[frequencies.length - 1] - frequencies[0]);
+
+main();
