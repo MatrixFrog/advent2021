@@ -1,6 +1,6 @@
-use advent::grid_from_input;
+use advent::{grid_from_input, positions};
 use grid::*;
-use permute::*;
+use std::cmp::min;
 
 fn raw_input() -> &'static str {
   include_str!("input.txt")
@@ -10,47 +10,42 @@ fn input() -> Grid<u32> {
   grid_from_input(raw_input())
 }
 
-#[derive(Clone, Copy)]
-enum Step {
-  Right,
-  Down,
-}
+type MinRiskGrid = Grid<Option<u32>>;
 
-type Path = Vec<Step>;
-// type RefPath<'a> = Vec<&'a Step>;
-
-fn total_risk(path: &Path, grid: &Grid<u32>) -> u32 {
-  let mut x = 0;
-  let mut y = 0;
-  let mut total = 0;
-  for step in path {
-    match step {
-      Step::Right => x += 1,
-      Step::Down => y += 1,
+fn min_risk(pos: (usize, usize), min_risk_grid: &mut MinRiskGrid, grid: &Grid<u32>) {
+  let (x, y) = pos;
+  if y == 0 {
+    min_risk_grid[y][x] = Some((1..=x).map(|xx| grid[y][xx]).sum());
+  } else if x == 0 {
+    min_risk_grid[y][x] = Some((1..=y).map(|yy| grid[yy][x]).sum())
+  } else {
+    match min_risk_grid[y][x - 1] {
+      Some(min_risk_to_left) => match min_risk_grid[y - 1][x] {
+        Some(min_risk_above) => {
+          min_risk_grid[y][x] = Some(min(min_risk_above, min_risk_to_left) + grid[y][x]);
+        }
+        None => panic!(),
+      },
+      None => panic!(),
     }
-    total += grid[y][x];
   }
-  total
 }
 
-fn all_paths_to(point: (usize, usize)) -> Vec<Path> {
-  let (x, y) = point;
-  let mut one_path = vec![Step::Right; x];
-  one_path.append(&mut vec![Step::Down; y]);
-  permute(one_path)
-}
-
-fn min_risk(point: (usize, usize), grid: &Grid<u32>) -> u32 {
-  all_paths_to(point)
-    .iter()
-    .map(|path| total_risk(path, grid))
-    .min()
-    .unwrap()
+fn make_min_risk_grid(grid: &Grid<u32>) -> MinRiskGrid {
+  let mut min_risk_grid = Grid::new(grid.rows(), grid.cols());
+  for pos in positions(grid) {
+    min_risk(pos, &mut min_risk_grid, grid)
+  }
+  min_risk_grid
 }
 
 fn main() {
   let grid = input();
-  let goal = (grid.cols() - 1, grid.rows() - 1);
+  assert_eq!(grid.rows(), grid.cols());
+  let min_risk_grid: MinRiskGrid = make_min_risk_grid(&grid);
 
-  println!("{}", min_risk(goal, &grid))
+  println!(
+    "{}",
+    min_risk_grid[grid.cols() - 1][grid.rows() - 1].unwrap()
+  )
 }

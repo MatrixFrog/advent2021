@@ -9,7 +9,6 @@ dependencies = [
  "clap",
  "grid",
  "itertools",
- "permute",
  "petgraph",
 ]
 
@@ -159,12 +158,6 @@ checksum = "8e22443d1643a904602595ba1cd8f7d896afe56d26712531c5ff73a15b2fbf64"
 dependencies = [
  "memchr",
 ]
-
-[[package]]
-name = "permute"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "add5cf6a6a9e572d398fc2e73500305c18b6eb66c46cc730ee3737025a4e9209"
 
 [[package]]
 name = "petgraph"
