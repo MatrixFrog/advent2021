@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::iter::Peekable;
 
 type Rule = ((u8, u8), u8);
 type Rules = HashMap<(u8, u8), u8>;
@@ -18,72 +17,68 @@ fn parse_rule(line: &str) -> Rule {
   ((a, b), parts[1].bytes().next().unwrap())
 }
 
-fn input() -> (impl Iterator<Item = u8>, Rules) {
+fn input() -> (&'static str, Rules) {
   let mut lines = raw_input().lines();
   let start = lines.next().unwrap();
   assert_eq!(Some(""), lines.next());
   let rules = lines.map(parse_rule).collect();
-  (start.bytes(), rules)
+  (start, rules)
 }
 
-struct RuleApplier<'a> {
-  rules: &'a Rules,
-  prev_state: Peekable<Box<dyn Iterator<Item = u8> + 'a>>,
-  // The most recent char from prev_state, or none if the most recent
-  // char returned was an inserted char.
-  data: Option<u8>,
+struct Polymer {
+  first: u8,
+  pairs: HashMap<(u8, u8), u64>,
 }
 
-impl<'a> Iterator for RuleApplier<'a> {
-  type Item = u8;
-  fn next(&mut self) -> Option<u8> {
-    match self.data {
-      None => {
-        self.data = self.prev_state.next();
-        self.data
-      }
-      Some(c) => {
-        self.data = None;
-        let next_next = self.prev_state.peek();
-        match next_next {
-          None => None,
-          Some(&nn) => Some(self.rules[&(c, nn)]),
-        }
-      }
+impl Polymer {
+  fn from_string(s: &str) -> Self {
+    let mut pairs: HashMap<(u8, u8), u64> = HashMap::new();
+    for p in s.bytes().collect::<Vec<u8>>().windows(2) {
+      let pair = match p {
+        [a, b] => (*a, *b),
+        _ => panic!("no"),
+      };
+      *pairs.entry(pair).or_insert(0) += 1;
+    }
+    Polymer {
+      first: s.bytes().next().unwrap(),
+      pairs,
     }
   }
-}
 
-fn apply<'a>(
-  state: Box<dyn Iterator<Item = u8> + 'a>,
-  rules: &'a Rules,
-) -> impl Iterator<Item = u8> + 'a {
-  RuleApplier {
-    rules,
-    prev_state: state.peekable(),
-    data: None,
+  fn grow(&mut self, rules: &Rules) {
+    let mut new_pairs: HashMap<(u8, u8), u64> = HashMap::new();
+    for ((l, r), count) in &self.pairs {
+      let inserted_char = rules[&(*l, *r)];
+      for new_pair in [(*l, inserted_char), (inserted_char, *r)] {
+        *new_pairs.entry(new_pair).or_insert(0) += count;
+      }
+    }
+    self.pairs = new_pairs;
+  }
+
+  fn frequency_map(&self) -> HashMap<u8, u64> {
+    let mut freq: HashMap<u8, u64> = HashMap::new();
+    for ((_, r), count) in &self.pairs {
+      *freq.entry(*r).or_insert(0) += count;
+    }
+    *freq.entry(self.first).or_insert(0) += 1;
+    freq
   }
 }
 
-fn get_answer(state: impl Iterator<Item = u8>) -> i64 {
-  let mut freq_map = HashMap::new();
-  for ch in state {
-    *freq_map.entry(ch).or_insert(0) += 1;
+fn solve(initial_state: &str, rules: &Rules) -> u64 {
+  let mut p = Polymer::from_string(initial_state);
+  for _ in 0..40 {
+    p.grow(rules);
   }
+  let freq_map = p.frequency_map();
   let most_common = freq_map.values().max().unwrap();
   let least_common = freq_map.values().min().unwrap();
   most_common - least_common
 }
 
-fn solve<'a>(initial_state: Box<dyn Iterator<Item = u8> + 'a>, rules: &'a Rules) -> i64 {
-  let mut state = initial_state;
-  for _ in 0..20 {
-    state = Box::new(apply(state, rules));
-  }
-  get_answer(state)
-}
-
 fn main() {
   let (initial_state, rules) = input();
-  println!("{}", solve(Box::new(initial_state), &rules));
+  println!("{}", solve(initial_state, &rules));
 }
