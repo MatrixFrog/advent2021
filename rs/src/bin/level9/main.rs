@@ -1,19 +1,7 @@
+use advent::grid_from_input;
 use advent::positions;
 use grid::*;
 use std::collections::HashSet;
-
-fn grid_from_input(input: &str) -> Grid<u32> {
-  let mut g = grid![];
-  for l in input.lines() {
-    g.push_row(
-      l.trim()
-        .chars()
-        .map(|c| c.to_digit(10).unwrap())
-        .collect::<Vec<u32>>(),
-    );
-  }
-  g
-}
 
 // Get the coordinates of squares adjacent to the given one (not including diagonally)
 pub fn surrounding_coordinates((r, c): (usize, usize)) -> Vec<(usize, usize)> {
