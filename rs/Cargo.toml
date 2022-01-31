@@ -11,3 +11,4 @@ itertools = "0.10.3"
 grid = "0.6.0"
 petgraph = "0.6.0"
 clap = { version = "3.0", features = ["derive"] }
+permute = "0.1.0"
