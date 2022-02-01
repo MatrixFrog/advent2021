@@ -1,51 +1,68 @@
-use advent::{grid_from_input, positions};
-use grid::*;
-use std::cmp::min;
+use advent::grid_from_input;
+use petgraph::{
+  algo::astar,
+  graph::{DiGraph, NodeIndex},
+  visit::{EdgeRef, IntoEdgeReferences},
+  Graph,
+};
+use std::collections::HashMap;
 
 fn raw_input() -> &'static str {
   include_str!("input.txt")
 }
 
-fn input() -> Grid<u32> {
-  grid_from_input(raw_input())
-}
+fn input() -> (DiGraph<u32, ()>, NodeIndex, NodeIndex) {
+  let grid = grid_from_input(raw_input());
+  let mut node_map: HashMap<(usize, usize), NodeIndex> = HashMap::new();
+  let mut graph = DiGraph::<u32, ()>::default();
 
-type MinRiskGrid = Grid<Option<u32>>;
-
-fn min_risk(pos: (usize, usize), min_risk_grid: &mut MinRiskGrid, grid: &Grid<u32>) {
-  let (x, y) = pos;
-  if y == 0 {
-    min_risk_grid[y][x] = Some((1..=x).map(|xx| grid[y][xx]).sum());
-  } else if x == 0 {
-    min_risk_grid[y][x] = Some((1..=y).map(|yy| grid[yy][x]).sum())
-  } else {
-    match min_risk_grid[y][x - 1] {
-      Some(min_risk_to_left) => match min_risk_grid[y - 1][x] {
-        Some(min_risk_above) => {
-          min_risk_grid[y][x] = Some(min(min_risk_above, min_risk_to_left) + grid[y][x]);
-        }
-        None => panic!(),
-      },
-      None => panic!(),
+  for r in 0..grid.rows() {
+    for c in 0..grid.cols() {
+      let node = graph.add_node(grid[r][c]);
+      node_map.insert((r, c), node);
     }
   }
-}
 
-fn make_min_risk_grid(grid: &Grid<u32>) -> MinRiskGrid {
-  let mut min_risk_grid = Grid::new(grid.rows(), grid.cols());
-  for pos in positions(grid) {
-    min_risk(pos, &mut min_risk_grid, grid)
+  for r in 0..grid.rows() {
+    for c in 0..grid.cols() {
+      let &this_node = node_map.get(&(r, c)).unwrap();
+
+      let node_to_right = node_map.get(&(r, c + 1));
+      match node_to_right {
+        Some(&nr) => {
+          graph.add_edge(this_node, nr, ());
+          graph.add_edge(nr, this_node, ());
+        }
+        None => (),
+      }
+
+      let node_below = node_map.get(&(r + 1, c));
+      match node_below {
+        Some(&nb) => {
+          graph.add_edge(this_node, nb, ());
+          graph.add_edge(nb, this_node, ());
+        }
+        None => (),
+      }
+    }
   }
-  min_risk_grid
+
+  let start = node_map[&(0, 0)];
+  let goal = node_map[&(grid.rows() - 1, grid.cols() - 1)];
+
+  (graph, start, goal)
 }
 
 fn main() {
-  let grid = input();
-  assert_eq!(grid.rows(), grid.cols());
-  let min_risk_grid: MinRiskGrid = make_min_risk_grid(&grid);
+  let (graph, start, goal) = input();
+  let is_goal = |node| node == goal;
 
-  println!(
-    "{}",
-    min_risk_grid[grid.cols() - 1][grid.rows() - 1].unwrap()
-  )
+  let edge_cost = |e: <&Graph<u32, ()> as IntoEdgeReferences>::EdgeRef| {
+    return graph[e.target()];
+  };
+
+  let estimate_cost = |_| 0;
+  let result = astar(&graph, start, is_goal, edge_cost, estimate_cost);
+  let (total_risk, _) = result.unwrap();
+  println!("{}", total_risk)
 }
