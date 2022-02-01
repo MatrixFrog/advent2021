@@ -1,4 +1,5 @@
 use advent::grid_from_input;
+use grid::Grid;
 use petgraph::{
   algo::astar,
   graph::{DiGraph, NodeIndex},
@@ -11,8 +12,38 @@ fn raw_input() -> &'static str {
   include_str!("input.txt")
 }
 
+fn mod9(x: u32) -> u32 {
+  let result = x % 9;
+  if result == 0 {
+    9
+  } else {
+    result
+  }
+}
+
+fn calculate_cell(grid: &Grid<u32>, row: usize, col: usize) -> u32 {
+  let orig_row = row % grid.rows();
+  let orig_col = col % grid.cols();
+  let orig_cell = grid[orig_row][orig_col];
+
+  let tile_row = (row / grid.rows()) as u32;
+  let tile_col = (col / grid.cols()) as u32;
+
+  mod9(orig_cell + tile_row + tile_col)
+}
+
+fn build_mega_grid(grid: Grid<u32>) -> Grid<u32> {
+  let mut new_grid = Grid::new(grid.rows() * 5, grid.cols() * 5);
+  for r in 0..new_grid.rows() {
+    for c in 0..new_grid.cols() {
+      new_grid[r][c] = calculate_cell(&grid, r, c);
+    }
+  }
+  new_grid
+}
+
 fn input() -> (DiGraph<u32, ()>, NodeIndex, NodeIndex) {
-  let grid = grid_from_input(raw_input());
+  let grid = build_mega_grid(grid_from_input(raw_input()));
   let mut node_map: HashMap<(usize, usize), NodeIndex> = HashMap::new();
   let mut graph = DiGraph::<u32, ()>::default();
 
